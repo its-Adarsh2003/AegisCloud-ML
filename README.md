@@ -1,110 +1,153 @@
-# AegisCloud-ML
+AegisCloud-ML ☁️🤖
 
-Lightweight ML toolkit to monitor EC2 CPU anomalies using an Isolation Forest.
+ML-powered cloud monitoring system for detecting EC2 CPU anomalies using AWS CloudWatch and Isolation Forest.
 
-## Overview
+📌 Overview
 
-This repo trains an unsupervised anomaly detector (Isolation Forest) on EC2 CPUUtilization metrics, saves the model, and provides:
-- a training script (`scripts/train_model.py`)
-- a local test / lambda shim (`scripts/local_lambda_test.py`)
-- a Streamlit dashboard (`dashboard.py`) that fetches live CloudWatch metrics and scores them with the model
-- a small utility to verify loading the model from S3 (`test_load_model.py`)
+AegisCloud-ML is a lightweight cloud monitoring and anomaly detection system built using AWS services and Machine Learning.
 
-The model is persisted as `models/model.pkl` and can be uploaded to S3 for the dashboard to load.
+The project monitors AWS EC2 CPU utilization metrics from CloudWatch, applies an Isolation Forest anomaly detection model, and visualizes suspicious CPU behavior through an interactive Streamlit dashboard.
 
-## Repository layout
+This project demonstrates:
 
-- `dashboard.py` — Streamlit app that loads a model from S3, fetches CloudWatch CPU metrics, builds features, predicts anomalies, and shows visualizations.
-- `test_load_model.py` — simple script to load the model directly from S3 using `boto3` (useful to verify AWS connectivity).
-- `scripts/train_model.py` — trains an `IsolationForest` on `data/cpu_real.csv` and writes `models/model.pkl`.
-- `scripts/local_lambda_test.py` — small local runner which loads `models/model.pkl` and runs sample predictions (useful for CI or lambda emulation).
-- `data/cpu_real.csv` — sample CloudWatch-exported CSV used by the trainer.
-- `models/model.pkl` — pre-trained model saved by `train_model.py`.
+Cloud Monitoring
+AWS Integration
+ML-based Anomaly Detection
+Real-time Visualization
+Automation Workflows
+🚀 Features
+📊 Real-time EC2 CPU monitoring using AWS CloudWatch
+🤖 ML-based anomaly detection using Isolation Forest
+☁️ AWS integration with EC2, S3, CloudWatch, and IAM
+📈 Interactive Streamlit dashboard for visualization
+🔄 Automated model loading from Amazon S3
+⚡ Real-time anomaly scoring and alert visualization
+🧪 Local Lambda-style testing environment
+🛠️ Tech Stack
+Cloud & DevOps
+AWS EC2
+AWS CloudWatch
+AWS S3
+AWS IAM
+Programming & ML
+Python
+Scikit-learn
+Pandas
+NumPy
+Boto3
+Dashboard & Visualization
+Streamlit
+Plotly
+🧠 Architecture
+EC2 Instance
+      ↓
+CloudWatch Metrics
+      ↓
+Feature Engineering Pipeline
+      ↓
+Isolation Forest Model
+      ↓
+Anomaly Detection Engine
+      ↓
+Streamlit Dashboard
+📂 Project Structure
+AegisCloud-ML/
+│
+├── dashboard.py
+├── test_load_model.py
+│
+├── scripts/
+│   ├── train_model.py
+│   └── local_lambda_test.py
+│
+├── data/
+│   └── cpu_real.csv
+│
+├── models/
+│   └── model.pkl
+│
+└── README.md
+⚙️ Installation
 
-## Key concepts
+Clone the repository:
 
-- Feature engineering: the trainer computes rolling statistics over CPU samples (`cpu_avg`, `cpu_max`) to remove noise and give the Isolation Forest stable signals.
-- Isolation Forest: unsupervised anomaly detector; model outputs `1` for normal and `-1` for anomaly. The `decision_function` gives a score where lower values are more anomalous.
-- Hybrid rule: dashboard combines ML score with a CPU threshold to avoid false positives (e.g., high CPU + anomalous ML score → alert).
+git clone https://github.com/its-Adarsh2003/AegisCloud-ML.git
+cd AegisCloud-ML
 
-## Prerequisites
+Create virtual environment:
 
-- Python 3.9+ (tested on 3.10)
-- A virtual environment (recommended)
-- AWS CLI configured or AWS environment variables set, with permissions for:
-  - `s3:GetObject` (for model load)
-  - `cloudwatch:GetMetricStatistics` (for dashboard metric reads)
-
-## Recommended install
-
-Create + activate virtualenv (Windows example):
-
-```bash
 python -m venv .venv
-source .venv/Scripts/activate
-pip install -U pip
-pip install boto3 pandas scikit-learn joblib streamlit plotly
-```
 
-Optional: create a `requirements.txt` with the above packages for reproducible installs.
+Activate environment:
 
-## Quickstart — train locally
+Windows
+.venv\Scripts\activate
+Linux/Mac
+source .venv/bin/activate
 
-1. Verify your `data/cpu_real.csv` is present and looks like CloudWatch CSV (timestamp, value rows).
-2. Run the trainer to build features, train the model, and save `models/model.pkl`:
+Install dependencies:
 
-```bash
+pip install -r requirements.txt
+▶️ Run the Project
+Train the ML Model
 python scripts/train_model.py
-```
-
-This writes `models/model.pkl` which `scripts/local_lambda_test.py` and the dashboard can load.
-
-## Quickstart — test local predictions
-
-Run the simple test harness to validate the saved model behaves as expected:
-
-```bash
+Run Local Testing
 python scripts/local_lambda_test.py
-```
-
-It will print predictions/scores for a normal and an anomalous sample.
-
-## Dashboard (Streamlit)
-
-1. Set configuration variables at the top of `dashboard.py`: `INSTANCE_ID`, `REGION`, `BUCKET`, `MODEL_KEY`.
-2. Ensure AWS credentials are available to `boto3` (e.g., `aws configure` or environment variables).
-3. Run Streamlit:
-
-```bash
+Start Streamlit Dashboard
 streamlit run dashboard.py
-```
+☁️ AWS Configuration
 
-Streamlit will open in your browser. The app caches the model and CloudWatch data for a short TTL for interactive speed.
+Ensure AWS credentials are configured:
 
-## Using S3 for the model
+aws configure
 
-- If you want the dashboard to use the cloud-hosted model, upload `models/model.pkl` to your S3 bucket at `models/model.pkl` (or update `MODEL_KEY`).
-- Ensure the IAM role or user used by `boto3` has `s3:GetObject` for that key.
+Required permissions:
 
-Example (AWS CLI):
+cloudwatch:GetMetricStatistics
+s3:GetObject
+📊 ML Workflow
 
-```bash
-aws s3 cp models/model.pkl s3://<your-bucket>/models/model.pkl
-```
+The system:
 
-## Troubleshooting
+Fetches EC2 CPU metrics from CloudWatch
+Builds rolling statistical features
+Applies Isolation Forest anomaly detection
+Scores anomalies in real time
+Displays results on Streamlit dashboard
+🔍 Example Use Cases
+Cloud infrastructure monitoring
+DevOps observability systems
+AWS anomaly detection
+CPU spike detection
+MLOps monitoring workflows
+Intelligent cloud dashboards
+📸 Dashboard Preview
 
-- No CloudWatch datapoints: check `INSTANCE_ID`, `REGION`, and that the instance is emitting `CPUUtilization` metrics.
-- boto3 permission errors: confirm IAM policy and that credentials are valid.
-- Model load fails locally: ensure `models/model.pkl` exists and was written by the same scikit-learn version, or retrain locally with `train_model.py`.
+Add Streamlit dashboard screenshots here
 
-## Recommended next steps
+Example:
 
-- Add `requirements.txt` and CI job to run `scripts/local_lambda_test.py` on each push.
-- Add unit tests for `load_data()` and `build_features()` to lock expected behavior.
-- Add an upload helper script to push `models/model.pkl` to S3 automatically after training.
-- Add more robust error handling and logging around network calls.
+/assets/dashboard.png
+📈 Future Improvements
+Docker containerization
+Kubernetes deployment
+CI/CD pipeline integration
+Email/SNS anomaly alerts
+Terraform infrastructure setup
+Multi-instance monitoring
+Grafana integration
+🏆 Learning Outcomes
 
-## Contact / License
+Through this project, I gained hands-on experience in:
 
-This is a learning/demo project. Use freely for experimentation. If you want, I can add a `LICENSE` file or prepare a `requirements.txt` and CI pipeline next.
+AWS Cloud Monitoring
+CloudWatch metric analysis
+Machine Learning anomaly detection
+Streamlit dashboard development
+Cloud-native automation workflows
+Real-time monitoring systems
+👨‍💻 Author
+Adarsh Dubey
+GitHub: its-Adarsh2003
+LinkedIn: Adarsh Dubey LinkedIn
+⭐ If you found this project useful, consider giving it a star!
